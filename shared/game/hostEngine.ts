@@ -357,7 +357,12 @@ export class HostGameEngine {
       return this.beginTurn();
     }
     const rotationIdx = Math.floor(this.turnCount / 2) % team.playerIds.length;
-    this.state.describerId = team.playerIds[rotationIdx];
+    const describerId = team.playerIds[rotationIdx];
+    if (!describerId) {
+      this.turnCount++;
+      return this.beginTurn();
+    }
+    this.state.describerId = describerId;
     this.state.skippedCount = 0;
 
     this.turnQueue =
@@ -373,7 +378,7 @@ export class HostGameEngine {
       startedAt: this.state.turnStartedAt,
       durationMs: this.state.turnDurationMs,
       currentTeamIndex: this.state.currentTeamIndex,
-      describerId: this.state.describerId,
+      describerId,
       cardHidden: true,
     };
     const out: Outbound[] = [{ to: "all", msg: evtMsg(base) }];

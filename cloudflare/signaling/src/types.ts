@@ -3,12 +3,13 @@
  * to connect peers — never game state.
  */
 import type { PlayerId } from "../../../shared/types/player";
+import { MAX_ROOM_SIZE as SHARED_MAX_ROOM_SIZE } from "../../../shared/types/room";
 import type {
   SignalClientMessage,
   SignalServerMessage,
 } from "../../../shared/networking/protocol";
 
-export const MAX_ROOM_SIZE = 8;
+export const MAX_ROOM_SIZE = SHARED_MAX_ROOM_SIZE;
 export const ROOM_TTL_MS = 10 * 60 * 1000; // idle rooms die after 10 minutes
 export const MAX_SDP_LENGTH = 32 * 1024;
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
-import { Button, Screen } from '../components/ui';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, Kicker, Screen } from '../components/ui';
+import { color, shadowSoft, type } from '../theme';
 import { useTurnTimer } from '../hooks/useTurnTimer';
 import type { useGameConnection } from '../hooks/useGameConnection';
 
@@ -18,49 +19,70 @@ export function LobbyScreen({
 
   return (
     <Screen>
-      <Text style={styles.label}>Room code</Text>
-      <Text style={styles.code}>{gc.roomId ?? '······'}</Text>
-      <Text style={styles.hint}>Share this code with friends (max 8 players)</Text>
+      <Kicker>The table is open</Kicker>
+      <Text style={styles.ticketLabel}>Share this code</Text>
+      <View style={styles.ticket}>
+        <Text style={styles.code}>{gc.roomId ?? '······'}</Text>
+      </View>
+      <Text style={styles.hint}>Friends join with this code · max 8 at the table</Text>
 
       <View style={styles.teamsRow}>
-        {[0, 1].map((i) => (
-          <TeamCard key={i} index={i as 0 | 1} gc={gc} />
-        ))}
+        <TeamCard index={0} gc={gc} />
+        <TeamCard index={1} gc={gc} />
       </View>
 
       {gc.signalingStatus === 'reconnecting' && (
-        <View style={styles.bannerWarn}>
-          <Text style={styles.warnText}>Signaling reconnecting…</Text>
-        </View>
+        <Text style={styles.warn}>Reconnecting to the room…</Text>
       )}
 
       {gc.isHost() ? (
-        <Button title="Start Game" onPress={onStart} disabled={!bothTeamsReady} />
+        <Button
+          title={bothTeamsReady ? 'Deal the first round' : 'Need a player on each team'}
+          onPress={onStart}
+          disabled={!bothTeamsReady}
+        />
       ) : (
         <View style={styles.waiting}>
-          <ActivityIndicator color="#22d3ee" />
-          <Text style={styles.hint}> Waiting for host to start…</Text>
+          <ActivityIndicator color={color.gold} />
+          <Text style={styles.hintInline}> Host is setting the table…</Text>
         </View>
       )}
-      <Button title="Leave" onPress={gc.leaveGame} variant="danger" />
+      <Button title="Leave table" onPress={gc.leaveGame} variant="ghost" />
     </Screen>
   );
 }
 
 function TeamCard({ index, gc }: { index: 0 | 1; gc: GC }) {
   const team = gc.view.teams[index];
+  const accent = index === 0 ? color.tide : color.blaze;
+  const mine = team.members.some((m) => m.id === gc.myId);
   return (
-    <View style={[styles.teamCard, index === 0 ? styles.teamA : styles.teamB]}>
-      <Text style={styles.teamName}>{team.name}</Text>
-      {team.members.map((m: { id: string; name: string; isHost: boolean }) => (
-        <Text key={m.id} style={styles.member}>
-          {m.isHost ? '👑 ' : ''}
-          {m.name}
-        </Text>
-      ))}
-      <View style={{ marginTop: 'auto' }}>
-        <Button title="Join" variant="secondary" onPress={() => gc.switchTeam(index)} />
+    <View style={[styles.teamCard, { borderColor: accent }]}>
+      <View style={[styles.teamStripe, { backgroundColor: accent }]} />
+      <Text style={[styles.teamName, { color: accent }]}>{team.name}</Text>
+      <View style={styles.members}>
+        {team.members.length === 0 ? (
+          <Text style={styles.emptySeat}>Empty seats</Text>
+        ) : (
+          team.members.map((m: { id: string; name: string; isHost: boolean }) => (
+            <View key={m.id} style={styles.chip}>
+              <Text style={styles.chipText} numberOfLines={1}>
+                {m.isHost ? 'Host · ' : ''}
+                {m.name}
+                {m.id === gc.myId ? '  · you' : ''}
+              </Text>
+            </View>
+          ))
+        )}
       </View>
+      <Pressable
+        onPress={() => gc.switchTeam(index)}
+        style={[styles.sitBtn, mine && { backgroundColor: accent + '33', borderColor: accent }]}
+      >
+        <Text style={[styles.sitLabel, { color: mine ? accent : color.cream }]}>
+          {mine ? 'Seated' : 'Sit here'}
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -73,85 +95,116 @@ export function GameScreen({ gc }: { gc: GC }) {
     () => (gc.view.turn ? Math.max(0, remainingMs / gc.view.turn.durationMs) : 0),
     [remainingMs, gc.view.turn],
   );
+  const describing = gc.view.describerId === gc.myId && gc.view.card;
+  const hot = secs <= 10;
+  const describerName = nameOf(gc.roster, gc.view.describerId);
+  const teamName = gc.view.teams[gc.view.currentTeamIndex]?.name ?? 'a team';
 
-  // Local expiry UX only; the HOST engine authoritatively ends the turn.
   useEffect(() => {
     if (expired && gc.view.turn) setGuessText('');
   }, [expired, gc.view.turn]);
 
-  if (!gc.view.turn || !gc.isDescriber === undefined) {
-    /* fallthrough */
-  }
+  const submitGuess = () => {
+    if (!guessText.trim()) return;
+    gc.guess(guessText.trim());
+    setGuessText('');
+  };
 
   return (
     <Screen>
-      {/* Scoreboard */}
       <View style={styles.scoreRow}>
-        <ScorePill name={gc.view.teams[0].name} score={gc.view.teams[0].score} active={gc.view.currentTeamIndex === 0} />
-        <Text style={styles.round}>
-          R{gc.view.round}/{gc.view.maxRounds}
-        </Text>
-        <ScorePill name={gc.view.teams[1].name} score={gc.view.teams[1].score} active={gc.view.currentTeamIndex === 1} />
+        <ScorePill
+          name={gc.view.teams[0].name}
+          score={gc.view.teams[0].score}
+          active={gc.view.currentTeamIndex === 0}
+          accent={color.tide}
+        />
+        <View style={styles.roundBadge}>
+          <Text style={styles.roundKicker}>Round</Text>
+          <Text style={styles.roundNum}>
+            {gc.view.round}
+            <Text style={styles.roundMax}>/{gc.view.maxRounds}</Text>
+          </Text>
+        </View>
+        <ScorePill
+          name={gc.view.teams[1].name}
+          score={gc.view.teams[1].score}
+          active={gc.view.currentTeamIndex === 1}
+          accent={color.blaze}
+        />
       </View>
 
-      {/* Timer bar */}
-      <View style={styles.timerTrack}>
-        <View style={[styles.timerFill, { width: `${pct * 100}%`, backgroundColor: secs <= 10 ? '#ef4444' : '#22d3ee' }]} />
+      <View style={styles.timerBlock}>
+        <Text style={[styles.timerText, hot && styles.timerHot]}>{Number.isFinite(secs) ? secs : '—'}</Text>
+        <View style={styles.timerTrack}>
+          <View
+            style={[
+              styles.timerFill,
+              { width: `${pct * 100}%`, backgroundColor: hot ? color.blaze : color.gold },
+            ]}
+          />
+        </View>
       </View>
-      <Text style={[styles.timerText, secs <= 10 && styles.timerDanger]}>{secs}s</Text>
 
-      {/* Card area — describer only */}
-      {gc.view.describerId === gc.myId && gc.view.card ? (
-        <View style={styles.cardBox}>
-          <Text style={styles.cardWord}>{gc.view.card.word}</Text>
-          <Text style={styles.cardPoints}>{gc.view.card.points} pts · {gc.view.card.difficulty}</Text>
-          <View style={{ flexDirection: 'row', gap: 12, marginTop: 16 }}>
-            <Button title="Skip (-1)" variant="secondary" onPress={gc.skipCard} />
-            <Button title="End Turn" variant="danger" onPress={gc.endTurn} />
+      {describing ? (
+        <View style={[styles.playingCard, shadowSoft]}>
+          <Text style={styles.cardKicker}>Describe this · don’t say it</Text>
+          <Text style={styles.cardWord}>{gc.view.card!.word}</Text>
+          <Text style={styles.cardMeta}>
+            {gc.view.card!.points} pts · {gc.view.card!.difficulty}
+          </Text>
+          {gc.view.card!.taboo && gc.view.card!.taboo.length > 0 ? (
+            <View style={styles.tabooBox}>
+              <Text style={styles.tabooLabel}>Forbidden</Text>
+              {gc.view.card!.taboo.map((w) => (
+                <Text key={w} style={styles.tabooWord}>
+                  {w}
+                </Text>
+              ))}
+            </View>
+          ) : null}
+          <View style={styles.cardActions}>
+            <View style={{ flex: 1 }}>
+              <Button title="Skip  −1" variant="secondary" compact onPress={gc.skipCard} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Button title="End turn" variant="danger" compact onPress={gc.endTurn} />
+            </View>
           </View>
         </View>
       ) : (
-        <View style={styles.spectatorBox}>
-          <Text style={styles.hint}>
-            {gc.view.describerId
-              ? `${nameOf(gc.roster, gc.view.describerId)} is describing for ${gc.view.teams[gc.view.currentTeamIndex]?.name}`
-              : 'Get ready…'}
+        <View style={styles.listenCard}>
+          <Kicker>On the clock</Kicker>
+          <Text style={styles.listenTitle}>{describerName}</Text>
+          <Text style={styles.listenSub}>describing for {teamName}</Text>
+          <Text style={styles.listenHint}>
+            {gc.iCanGuess ? 'Type what you think it is.' : 'Listen. Don’t spoil the table.'}
           </Text>
         </View>
       )}
 
-      {/* Guesser input */}
       {gc.iCanGuess && (
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={styles.guessRow}>
           <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="Type your guess…"
-            placeholderTextColor="#475569"
+            placeholder="Your guess"
+            placeholderTextColor={color.mute}
+            selectionColor={color.gold}
             value={guessText}
             autoCorrect={false}
             autoCapitalize="none"
+            returnKeyType="send"
             onChangeText={setGuessText}
-            onSubmitEditing={() => {
-              if (guessText.trim()) {
-                gc.guess(guessText.trim());
-                setGuessText('');
-              }
-            }}
+            onSubmitEditing={submitGuess}
+            style={styles.guessInput}
           />
-          <Button title="Guess" onPress={() => {
-            if (guessText.trim()) {
-              gc.guess(guessText.trim());
-              setGuessText('');
-            }
-          }} />
+          <Button title="Send" compact onPress={submitGuess} />
         </View>
       )}
 
-      {/* Feed */}
       <View style={styles.feed}>
-        {gc.view.feed.slice(-6).map((f: import('@shared/game').GuessFeedItem) => (
+        {gc.view.feed.slice(-5).map((f: import('@shared/game').GuessFeedItem) => (
           <Text key={f.key} style={[styles.feedItem, f.correct ? styles.feedGood : styles.feedBad]}>
-            {f.correct ? `✔ ${f.value} +${f.pointsAwarded}` : `✖ ${f.value}`}
+            {f.correct ? `Hit  ${f.value}  +${f.pointsAwarded}` : `Miss  ${f.value}`}
           </Text>
         ))}
       </View>
@@ -159,81 +212,181 @@ export function GameScreen({ gc }: { gc: GC }) {
   );
 }
 
-function nameOf(roster: { id: string; name: string }[], id: string): string {
+function nameOf(roster: { id: string; name: string }[], id: string | null): string {
+  if (!id) return 'Someone';
   return roster.find((p) => p.id === id)?.name ?? 'Someone';
 }
 
-function ScorePill({ name, score, active }: { name: string; score: number; active: boolean }) {
+function ScorePill({
+  name,
+  score,
+  active,
+  accent,
+}: {
+  name: string;
+  score: number;
+  active: boolean;
+  accent: string;
+}) {
   return (
-    <View style={[styles.pill, active && styles.pillActive]}>
-      <Text style={styles.pillName}>{name}</Text>
+    <View style={[styles.pill, active && { borderColor: accent, backgroundColor: accent + '22' }]}>
+      <Text style={[styles.pillName, active && { color: accent }]} numberOfLines={1}>
+        {name}
+      </Text>
       <Text style={styles.pillScore}>{score}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  label: { color: '#94a3b8', textAlign: 'center', marginTop: 20 },
-  code: {
-    fontSize: 44,
-    fontWeight: '900',
-    letterSpacing: 10,
-    color: '#22d3ee',
-    textAlign: 'center',
-    marginBottom: 4,
+  ticketLabel: { ...type.mute, marginTop: 10, marginBottom: 8 },
+  ticket: {
+    backgroundColor: color.panel,
+    borderWidth: 1,
+    borderColor: color.gold,
+    borderStyle: 'dashed',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
   },
-  hint: { color: '#64748b', textAlign: 'center', marginBottom: 18 },
-  teamsRow: { flexDirection: 'row', gap: 12, flex: 1 },
+  code: {
+    fontSize: 40,
+    fontWeight: '800',
+    letterSpacing: 12,
+    color: color.gold,
+  },
+  hint: { ...type.mute, textAlign: 'center', marginTop: 10, marginBottom: 18 },
+  hintInline: { ...type.mute },
+  teamsRow: { flexDirection: 'row', gap: 12, flex: 1, minHeight: 220 },
   teamCard: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: 18,
     padding: 12,
-    backgroundColor: '#111c31',
+    paddingTop: 16,
+    backgroundColor: color.panel,
     borderWidth: 1,
+    overflow: 'hidden',
   },
-  teamA: { borderColor: '#3b82f6' },
-  teamB: { borderColor: '#ef4444' },
-  teamName: { color: '#e2e8f0', fontWeight: '700', marginBottom: 8 },
-  member: { color: '#cbd5e1', fontSize: 13, marginVertical: 2 },
-  waiting: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 14 },
-  bannerWarn: { backgroundColor: '#78350f', borderRadius: 10, padding: 10, marginBottom: 8 },
-  warnText: { color: '#fcd34d', textAlign: 'center' },
-  scoreRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  round: { color: '#64748b', fontWeight: '700' },
-  pill: { flex: 1, backgroundColor: '#16223a', borderRadius: 10, padding: 8, opacity: 0.6 },
-  pillActive: { opacity: 1, borderWidth: 1, borderColor: '#22d3ee' },
-  pillName: { color: '#94a3b8', fontSize: 11 },
-  pillScore: { color: '#f1f5f9', fontSize: 20, fontWeight: '800' },
-  timerTrack: { height: 6, backgroundColor: '#1e293b', borderRadius: 3, marginTop: 12 },
-  timerFill: { height: 6, borderRadius: 3 },
-  timerText: { color: '#e2e8f0', textAlign: 'center', marginTop: 6, fontSize: 18, fontWeight: '800' },
-  timerDanger: { color: '#ef4444' },
-  cardBox: {
-    flex: 1,
+  teamStripe: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+  },
+  teamName: { fontWeight: '800', fontSize: 15, marginBottom: 10, letterSpacing: 0.4 },
+  members: { flex: 1, gap: 6 },
+  emptySeat: { ...type.mute, fontStyle: 'italic' },
+  chip: {
+    backgroundColor: color.ink2,
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
+  chipText: { color: color.cream, fontSize: 12, fontWeight: '600' },
+  sitBtn: {
+    marginTop: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: color.line,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  sitLabel: { fontWeight: '700', fontSize: 13 },
+  waiting: {
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#132033',
-    borderRadius: 18,
-    marginVertical: 14,
-    borderWidth: 1,
-    borderColor: '#22d3ee55',
+    paddingVertical: 14,
   },
-  cardWord: { color: '#f8fafc', fontSize: 40, fontWeight: '900', textAlign: 'center' },
-  cardPoints: { color: '#fbbf24', marginTop: 8, fontWeight: '700' },
-  spectatorBox: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  input: {
-    backgroundColor: '#1e293b',
-    borderColor: '#334155',
+  warn: { color: color.warn, textAlign: 'center', marginBottom: 8, fontWeight: '600' },
+  scoreRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  roundBadge: { alignItems: 'center', minWidth: 56 },
+  roundKicker: { ...type.kicker, fontSize: 9, color: color.mute },
+  roundNum: { color: color.cream, fontSize: 18, fontWeight: '800' },
+  roundMax: { color: color.mute, fontWeight: '600', fontSize: 13 },
+  pill: {
+    flex: 1,
+    backgroundColor: color.panel,
+    borderRadius: 14,
+    padding: 10,
     borderWidth: 1,
-    borderRadius: 10,
-    color: '#f1f5f9',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    marginBottom: 8,
+    borderColor: color.line,
+  },
+  pillName: { color: color.mute, fontSize: 11, fontWeight: '700' },
+  pillScore: { color: color.cream, fontSize: 22, fontWeight: '800', marginTop: 2 },
+  timerBlock: { marginTop: 16, marginBottom: 8, alignItems: 'center' },
+  timerText: {
+    fontSize: 42,
+    fontWeight: '300',
+    color: color.gold,
+    letterSpacing: 2,
+    fontVariant: ['tabular-nums'],
+  },
+  timerHot: { color: color.blaze, fontWeight: '700' },
+  timerTrack: {
+    height: 4,
+    width: '100%',
+    backgroundColor: color.panelLift,
+    borderRadius: 2,
+    marginTop: 6,
+    overflow: 'hidden',
+  },
+  timerFill: { height: 4, borderRadius: 2 },
+  playingCard: {
+    flex: 1,
+    marginVertical: 12,
+    backgroundColor: '#f3e6d0',
+    borderRadius: 20,
+    padding: 22,
+    justifyContent: 'center',
+  },
+  cardKicker: {
+    ...type.kicker,
+    color: '#7a5a28',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  cardWord: {
+    fontFamily: type.display.fontFamily,
+    fontSize: 42,
+    color: '#1a1008',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  cardMeta: { textAlign: 'center', color: '#7a5a28', marginTop: 8, fontWeight: '700' },
+  tabooBox: { marginTop: 18, alignItems: 'center', gap: 4 },
+  tabooLabel: { ...type.kicker, color: color.blazeDeep, marginBottom: 4 },
+  tabooWord: { color: '#5c2a2a', fontWeight: '700', fontSize: 14, letterSpacing: 1 },
+  cardActions: { flexDirection: 'row', gap: 10, marginTop: 20 },
+  listenCard: {
+    flex: 1,
+    marginVertical: 12,
+    backgroundColor: color.panel,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: color.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  listenTitle: { ...type.display, textAlign: 'center', marginTop: 12 },
+  listenSub: { ...type.mute, marginTop: 6, fontSize: 15 },
+  listenHint: { ...type.body, textAlign: 'center', marginTop: 22, color: color.mute },
+  guessRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 },
+  guessInput: {
+    flex: 1,
+    backgroundColor: color.panel,
+    borderColor: color.line,
+    borderWidth: 1,
+    borderRadius: 14,
+    color: color.cream,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 16,
   },
-  feed: { minHeight: 90 },
-  feedItem: { fontSize: 13, marginVertical: 2 },
-  feedGood: { color: '#34d399' },
-  feedBad: { color: '#f87171' },
+  feed: { minHeight: 72, gap: 4 },
+  feedItem: { fontSize: 13, fontWeight: '600' },
+  feedGood: { color: color.ok },
+  feedBad: { color: color.blaze },
 });

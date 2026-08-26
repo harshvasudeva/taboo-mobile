@@ -4,8 +4,9 @@
   "private": true,
   "main": "index.ts",
   "scripts": {
-    "start": "expo start --dev-client",
-    "android": "expo run:android",
+    "start": "node --dns-result-order=ipv4first ./node_modules/expo/bin/cli start --dev-client --localhost --port 8081",
+    "android": "node --dns-result-order=ipv4first ./node_modules/expo/bin/cli start --dev-client --localhost --port 8081 --android",
+    "android:run": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild --clean",
     "typecheck": "tsc --noEmit"

@@ -14,7 +14,7 @@ import type {
   PeerTarget,
   TransportEvent,
 } from '@shared/networking/transport';
-import type { GameCommand, GameEvent } from '@shared/networking/events';
+import type { GameCommand } from '@shared/networking/events';
 import type {
   GameWireMessage,
   SignalClientMessage,
