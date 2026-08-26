@@ -1,0 +1,384 @@
+<!DOCTYPE html><!DOCTYPE html>
+
+<html lang="en"><html lang="en">
+
+<head>	<head>
+
+    <meta charset="UTF-8">		<meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Taboo - Multiplayer Word Guessing Game</title>		<title>Taboo - Team Word Guessing Game</title>
+
+    <link rel="stylesheet" href="styles.css">		<link rel="stylesheet" href="styles.css" />
+
+</head>	</head>
+
+<body>	<body>
+
+    <div class="container">		<div class="container">
+
+        <!-- Room Selection Screen -->			<!-- Setup Screen -->
+
+        <div id="room-screen" class="screen active">			<div id="setup-screen" class="screen active">
+
+            <div class="room-content">				<div class="setup-content">
+
+                <h1>🎯 TABOO</h1>					<h1>🎯 Taboo Game</h1>
+
+                <p class="subtitle">Multiplayer Word Guessing Game</p>					<p class="subtitle">Team Word Guessing Challenge</p>
+
+                
+
+                <div class="room-actions">					<div class="team-setup">
+
+                    <div class="action-card">						<div class="team-section">
+
+                        <h2>Create Room</h2>							<h2>Team 1</h2>
+
+                        <input type="text" id="create-player-name" placeholder="Your Name" class="input-field">							<input
+
+                        <button id="create-room-btn" class="btn-primary">Create New Room</button>								type="text"
+
+                    </div>								id="team1-name"
+
+                    								placeholder="Enter Team 1 Name"
+
+                    <div class="divider">OR</div>								value="Team Alpha"
+
+                    							/>
+
+                    <div class="action-card">							<div class="player-inputs">
+
+                        <h2>Join Room</h2>								<input
+
+                        <input type="text" id="join-player-name" placeholder="Your Name" class="input-field">									type="text"
+
+                        <input type="text" id="room-code-input" placeholder="Room Code (e.g., ABC123)" class="input-field" maxlength="6">									class="player-input"
+
+                        <button id="join-room-btn" class="btn-primary">Join Room</button>									placeholder="Player 1 Name"
+
+                    </div>									data-team="1"
+
+                </div>								/>
+
+                								<input
+
+                <div id="connection-status" class="connection-status">									type="text"
+
+                    <span class="status-dot"></span>									class="player-input"
+
+                    <span class="status-text">Connecting...</span>									placeholder="Player 2 Name"
+
+                </div>									data-team="1"
+
+            </div>								/>
+
+        </div>								<input
+
+									type="text"
+
+        <!-- Lobby Screen -->									class="player-input"
+
+        <div id="lobby-screen" class="screen">									placeholder="Player 3 Name"
+
+            <div class="lobby-content">									data-team="1"
+
+                <div class="lobby-header">								/>
+
+                    <h1>Room: <span id="room-code-display">------</span></h1>							</div>
+
+                    <button id="copy-code-btn" class="btn-copy">📋 Copy Code</button>							<button class="add-player-btn" data-team="1">+ Add Player</button>
+
+                </div>						</div>
+
+                
+
+                <div class="teams-container">						<div class="team-section">
+
+                    <div class="team-lobby" data-team="0">							<h2>Team 2</h2>
+
+                        <h2>Team 1 <span class="team-color blue"></span></h2>							<input
+
+                        <div id="team1-players" class="player-list"></div>								type="text"
+
+                        <button class="btn-join-team" data-team="0">Join Team 1</button>								id="team2-name"
+
+                    </div>								placeholder="Enter Team 2 Name"
+
+                    								value="Team Beta"
+
+                    <div class="team-lobby" data-team="1">							/>
+
+                        <h2>Team 2 <span class="team-color red"></span></h2>							<div class="player-inputs">
+
+                        <div id="team2-players" class="player-list"></div>								<input
+
+                        <button class="btn-join-team" data-team="1">Join Team 2</button>									type="text"
+
+                    </div>									class="player-input"
+
+                </div>									placeholder="Player 1 Name"
+
+                									data-team="2"
+
+                <div class="lobby-actions">								/>
+
+                    <button id="start-game-btn" class="btn-primary" disabled>Start Game</button>								<input
+
+                    <p class="hint">Waiting for players... (Need at least 1 player per team)</p>									type="text"
+
+                </div>									class="player-input"
+
+            </div>									placeholder="Player 2 Name"
+
+        </div>									data-team="2"
+
+								/>
+
+        <!-- Game Screen -->								<input
+
+        <div id="game-screen" class="screen">									type="text"
+
+            <!-- Header with scores and timer -->									class="player-input"
+
+            <div class="game-header">									placeholder="Player 3 Name"
+
+                <div class="team-score-bar team1-bar">									data-team="2"
+
+                    <div class="team-info">								/>
+
+                        <span class="team-indicator">• Team 1</span>							</div>
+
+                        <div class="player-avatars" id="team1-avatars"></div>							<button class="add-player-btn" data-team="2">+ Add Player</button>
+
+                    </div>						</div>
+
+                    <div class="score-display" id="team1-score">0</div>					</div>
+
+                </div>
+
+                					<button id="start-game-btn" class="btn-primary">Start Game</button>
+
+                <div class="timer-display" id="timer">60</div>				</div>
+
+                			</div>
+
+                <div class="team-score-bar team2-bar">
+
+                    <div class="score-display" id="team2-score">0</div>			<!-- Game Screen -->
+
+                    <div class="team-info">			<div id="game-screen" class="screen">
+
+                        <div class="player-avatars" id="team2-avatars"></div>				<div class="game-header">
+
+                        <span class="team-indicator">Team 2 •</span>					<div class="team-scores">
+
+                    </div>						<div class="team-score team1-score">
+
+                </div>							<h3 id="team1-display-name">Team 1</h3>
+
+            </div>							<div class="score" id="team1-score">0</div>
+
+						</div>
+
+            <!-- Turn Start -->						<div class="timer-container">
+
+            <div id="turn-start" class="game-phase">							<div class="timer" id="timer">60</div>
+
+                <div class="phase-content">							<div class="round-info" id="round-info">Round 1</div>
+
+                    <h2 class="current-team-name" id="current-team-announce">Team 1's Turn</h2>						</div>
+
+                    <p class="describer-info">						<div class="team-score team2-score">
+
+                        <span id="describer-name">Player Name</span> is describing!							<h3 id="team2-display-name">Team 2</h3>
+
+                    </p>							<div class="score" id="team2-score">0</div>
+
+                    <p class="phase-instructions">						</div>
+
+                        Other team members: type your guesses below<br>					</div>
+
+                        Describer: avoid using the taboo words!				</div>
+
+                    </p>
+
+                    <button id="ready-btn" class="btn-start">Ready to Start</button>				<!-- Turn Start Screen -->
+
+                </div>				<div id="turn-start" class="turn-screen">
+
+            </div>					<div class="turn-content">
+
+						<h2 id="current-team-name">Team 1</h2>
+
+            <!-- Active Game -->						<p class="describer-announcement">
+
+            <div id="active-game" class="game-phase">							<span id="describer-name">Player 1</span> is the describer!
+
+                <h2 class="round-title">ROUND <span id="round-number">1</span> OVERVIEW</h2>						</p>
+
+                						<p class="instructions">
+
+                <div id="word-grid" class="word-grid"></div>							Other team members will guess the words.<br />
+
+                							Avoid using the taboo words shown!
+
+                <div class="game-info-bar">						</p>
+
+                    <p class="info-text">						<button id="ready-btn" class="btn-primary">Ready to Start</button>
+
+                        <span class="difficulty-tag blue">Easy/Medium</span> = 10/15 pts • 					</div>
+
+                        <span class="difficulty-tag dark-blue">Hard</span> = 20 pts • 				</div>
+
+                        <span class="difficulty-tag orange">Orange</span> and 
+
+                        <span class="difficulty-tag red">Red</span> = Rare words (25-30 pts)				<!-- Active Game -->
+
+                    </p>				<div id="active-game" class="game-content">
+
+                </div>					<div class="round-overview">
+
+                						<h2>ROUND OVERVIEW</h2>
+
+                <div class="contributions-panel">						<div id="word-grid" class="word-grid"></div>
+
+                    <h3>✓ Contributions (<span id="total-points">0 points</span>)</h3>						<div class="game-info">
+
+                    <div id="player-contributions" class="contributions-list"></div>							<p class="difficulty-info">
+
+                </div>								Easy/Medium/Hard/Insane words have a base score of 10/15/20/30
+
+                								points. <span class="rare-words">Red</span> and
+
+                <div class="guess-section">								<span class="very-rare-words">orange</span> words are guessed
+
+                    <input 								very rarely.
+
+                        type="text" 							</p>
+
+                        id="guess-input" 						</div>
+
+                        class="guess-input" 					</div>
+
+                        placeholder="Type your guess here..."
+
+                        autocomplete="off"					<div class="round-summary">
+
+                    >						<div class="contributions-section">
+
+                    <div class="game-controls">							<h3>✓ Contributions (<span id="total-points">0 points</span>)</h3>
+
+                        <button id="skip-btn" class="btn-skip">Skip Word</button>							<div id="player-contributions" class="player-contributions"></div>
+
+                        <button id="end-turn-btn" class="btn-end">End Turn</button>						</div>
+
+                    </div>					</div>
+
+                </div>
+
+            </div>					<div class="guess-input-section">
+
+						<input
+
+            <!-- Round End -->							type="text"
+
+            <div id="round-end" class="game-phase">							id="guess-input"
+
+                <div class="phase-content">							class="guess-input"
+
+                    <h2>Round Complete!</h2>							placeholder="Type your guess here..."
+
+                    <div class="round-summary">							autocomplete="off"
+
+                        <div class="stat-item">						/>
+
+                            <span class="stat-label">Words Guessed:</span>						<div class="input-actions">
+
+                            <span class="stat-value" id="words-guessed-count">0</span>							<button id="skip-word-btn" class="btn-skip">
+
+                        </div>								Skip Current Word
+
+                        <div class="stat-item">							</button>
+
+                            <span class="stat-label">Points Earned:</span>							<button id="end-turn-btn" class="btn-secondary">End Turn</button>
+
+                            <span class="stat-value" id="points-earned">0</span>						</div>
+
+                        </div>					</div>
+
+                    </div>				</div>
+
+                    <button id="next-turn-btn" class="btn-start">Next Turn</button>				<!-- Round End -->
+
+                </div>				<div id="round-end" class="round-end-screen">
+
+            </div>					<div class="round-end-content">
+
+        </div>						<h2>Round Complete!</h2>
+
+						<div class="round-stats">
+
+        <!-- Game Over Screen -->							<div class="stat">
+
+        <div id="gameover-screen" class="screen">								<span class="stat-label">Words Guessed:</span>
+
+            <div class="gameover-content">								<span class="stat-value" id="words-guessed">0</span>
+
+                <h1>🏆 GAME OVER</h1>							</div>
+
+                <div class="winner-announcement" id="winner-text"></div>							<div class="stat">
+
+                <div class="final-scores-grid">								<span class="stat-label">Points Earned:</span>
+
+                    <div class="final-score-card team1">								<span class="stat-value" id="points-earned">0</span>
+
+                        <h3 id="final-team1-name">Team 1</h3>							</div>
+
+                        <div class="final-score" id="final-team1-score">0</div>						</div>
+
+                    </div>						<button id="next-turn-btn" class="btn-primary">Next Turn</button>
+
+                    <div class="final-score-card team2">					</div>
+
+                        <h3 id="final-team2-name">Team 2</h3>				</div>
+
+                        <div class="final-score" id="final-team2-score">0</div>			</div>
+
+                    </div>
+
+                </div>			<!-- Game Over Screen -->
+
+                <button id="new-game-btn" class="btn-primary">New Game</button>			<div id="gameover-screen" class="screen">
+
+            </div>				<div class="gameover-content">
+
+        </div>					<h1>🏆 Game Over!</h1>
+
+    </div>					<div class="winner-announcement" id="winner-announcement"></div>
+
+					<div class="final-scores">
+
+    <!-- Socket.IO Client -->						<div class="final-score">
+
+    <script src="/socket.io/socket.io.js"></script>							<h3 id="final-team1-name">Team 1</h3>
+
+    <script src="app.js"></script>							<div class="score" id="final-team1-score">0</div>
+
+</body>						</div>
+
+</html>						<div class="final-score">
+
+							<h3 id="final-team2-name">Team 2</h3>
+							<div class="score" id="final-team2-score">0</div>
+						</div>
+					</div>
+					<button id="new-game-btn" class="btn-primary">New Game</button>
+				</div>
+			</div>
+		</div>
+
+		<script src="script.js"></script>
+	</body>
+</html>

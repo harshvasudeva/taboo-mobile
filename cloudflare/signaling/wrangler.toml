@@ -1,0 +1,14 @@
+name = "taboo-signaling"
+main = "src/index.ts"
+compatibility_date = "2026-08-01"
+
+# Signaling-only Worker. It intentionally has NO KV / DO / R2 bindings in this
+# MVP — rooms live in isolate memory with aggressive TTL cleanup.
+#
+# PRODUCTION NOTE: plain Worker isolates are ephemeral and single-location.
+# For durable, multi-pop signaling move the room registry into a Durable
+# Object per room (see docs/serverless-webrtc.md). The wire protocol below
+# does not change when that happens.
+
+[observability]
+enabled = true

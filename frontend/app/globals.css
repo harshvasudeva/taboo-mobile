@@ -1,0 +1,387 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 10, 10, 30;
+  --background-end-rgb: 15, 52, 96;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb)));
+  min-height: 100vh;
+  background-attachment: fixed;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(34, 197, 94, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 197, 94, 0.5);
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.4s ease-out;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Diagonal glare animation for badges */
+.glare-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.glare-badge::after {
+  content: "";
+  position: absolute;
+  /* move the start slightly lower to better center the glare */
+  left: -45%;
+  top: 76%;
+  width: 200%;
+  height: 200%;
+  /* a narrow bright band rotated to align with diagonal */
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0.45) 45%, rgba(255, 255, 255, 0.8) 50%, rgba(255, 255, 255, 0.45) 55%, rgba(255, 255, 255, 0) 80%);
+  mix-blend-mode: overlay;
+  opacity: 0.9;
+  pointer-events: none;
+  transform: rotate(-45deg);
+  animation: glare 3s linear infinite;
+}
+
+@keyframes glare {
+  0% {
+    transform: translate(-120%, 10%) rotate(-45deg);
+  }
+
+  20% {
+    transform: translate(-120%, 10%) rotate(-45deg);
+  }
+
+  60% {
+    transform: translate(120%, -140%) rotate(-45deg);
+  }
+
+  100% {
+    transform: translate(120%, -140%) rotate(-45deg);
+  }
+}
+
+/* Coin flip and captain card styles */
+.coin-scene {
+  perspective: 1000px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.coin {
+  width: 140px;
+  height: 140px;
+  position: relative;
+  transform-style: preserve-3d;
+  border-radius: 50%;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    0 5px 20px rgba(0, 0, 0, 0.3),
+    inset 0 -10px 20px rgba(0, 0, 0, 0.4),
+    inset 0 10px 20px rgba(255, 255, 255, 0.15);
+  border: 3px solid rgba(255, 255, 255, 0.15);
+  transition: box-shadow 0.3s ease;
+}
+
+.coin:hover {
+  box-shadow:
+    0 15px 50px rgba(0, 0, 0, 0.6),
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    inset 0 -10px 20px rgba(0, 0, 0, 0.4),
+    inset 0 10px 20px rgba(255, 255, 255, 0.2);
+}
+
+.coin-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.coin-text {
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.coin-front {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e3a8a 100%);
+}
+
+.coin-back {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #991b1b 100%);
+  transform: rotateY(180deg);
+}
+
+/* Toss container and layout */
+.toss-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.captains-row {
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.captain-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+.captain-avatar {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.captain-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.ready-btn {
+  transition: all 0.2s ease;
+}
+
+.ready-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.ready-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.toss-instruction {
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+}
+
+.toss-result-banner {
+  padding: 16px 24px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  box-shadow: 0 8px 32px rgba(34, 197, 94, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+/* Draft phase styles */
+.draft-phase-container {
+  padding: 1.5rem;
+}
+
+.draft-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.teams-section {
+  order: 2;
+}
+
+.available-players-section {
+  order: 1;
+}
+
+.team-card {
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.player-card {
+  backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
+}
+
+.player-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.players-grid {
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.players-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.players-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.players-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.players-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.player-item {
+  transition: all 0.2s ease;
+}
+
+.player-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.last-player-choice {
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(147, 51, 234, 0.2);
+}
+
+/* Responsive adjustments for draft */
+@media (min-width: 1024px) {
+  .teams-section {
+    order: 1;
+  }
+
+  .available-players-section {
+    order: 2;
+  }
+}
+
+/* Toss result screen */
+.toss-result-screen {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  min-height: 400px;
+}
+
+/* Captain selection modal styles */
+.captain-selection-card {
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.captain-selection-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.player-btn {
+  transition: all 0.2s ease;
+}
+
+.player-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.selected-captain {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}

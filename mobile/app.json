@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Taboo",
+    "slug": "taboo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "taboo",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.taboo.game.mobile"
+    },
+    "android": {
+      "package": "com.taboo.game.mobile"
+    },
+    "_comment": "WebRTC uses react-native-webrtc which requires a DEVELOPMENT BUILD (npx expo run:android / run:ios). Expo Go will NOT work."
+  }
+}
