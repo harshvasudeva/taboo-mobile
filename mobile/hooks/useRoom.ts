@@ -42,6 +42,7 @@ export function useRoom(myId: PlayerId) {
           setHostId(msg.hostId);
           setRoster(msg.players);
           setError(null);
+          webrtc.transportRef.current?.noteHostJoined(msg.hostId);
           break;
         case 'peer_joined':
           setRoster((prev) =>
@@ -64,7 +65,7 @@ export function useRoom(myId: PlayerId) {
           break;
       }
     },
-    [hostId, myId],
+    [hostId, myId, webrtc.transportRef],
   );
 
   /** Wire the sink AFTER transport exists so it also receives messages. */

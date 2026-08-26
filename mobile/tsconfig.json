@@ -4,10 +4,9 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["../shared/*"],
-      "*": ["./*"]
+      "@shared/*": ["../shared/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "../shared/**/*.ts"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }

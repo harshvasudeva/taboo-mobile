@@ -77,7 +77,11 @@ export function useGameConnection(myId: PlayerId) {
       const transport = room.transportRef.current;
       for (const o of outbound) {
         transport?.deliver({ to: o.to, msg: o.msg });
-        setView((v: GameView) => applyGameEvent(v, o.msg, myId));
+        // Targeted events (describer card) must not land in the host UI
+        // unless this device is the addressee.
+        if (o.to === 'all' || o.to === myId) {
+          setView((v: GameView) => applyGameEvent(v, o.msg, myId));
+        }
       }
     },
     [myId, room.transportRef],

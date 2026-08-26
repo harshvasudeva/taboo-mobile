@@ -18,6 +18,7 @@ code-simplifier.md
 
 # Expo
 .expo/
+mobile/.gradle-home/
 *.jks
 *.p8
 *.p12

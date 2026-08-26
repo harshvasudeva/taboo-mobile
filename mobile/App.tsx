@@ -7,7 +7,8 @@ import { Linking, StyleSheet, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SignalingClient } from './services/signaling/signalingClient';
 import { useGameConnection } from './hooks/useGameConnection';
-import { Button, Screen } from './components/ui';
+import { Atmosphere, Button, Screen } from './components/ui';
+import { color } from './theme';
 import {
   CreateGameScreen,
   HomeScreen,
@@ -54,7 +55,7 @@ export default function App() {
   }
 
   return (
-    <View style={styles.root}>
+    <Atmosphere>
       <StatusBar style="light" />
       {body}
 
@@ -67,10 +68,10 @@ export default function App() {
           {gc.hostLost && (
             <>
               <Banner
-                text={'Host disconnected.\n(Protocol reserves deterministic host migration — see docs.)'}
+                text={'The host left the table.\nThis round can’t continue.'}
                 tone="bad"
               />
-              <Button title="Leave Room" variant="danger" onPress={gc.leaveGame} />
+              <Button title="Leave table" variant="danger" onPress={gc.leaveGame} />
             </>
           )}
           {gc.error && !gc.hostLost && (
@@ -81,7 +82,7 @@ export default function App() {
       {!inRoom && gc.error ? (
         <Banner text={gc.error} tone="bad" onDismiss={gc.clearError} />
       ) : null}
-    </View>
+    </Atmosphere>
   );
 }
 
@@ -97,26 +98,23 @@ function Banner({
   return (
     <View style={[styles.banner, tone === 'warn' ? styles.bannerWarn : styles.bannerBad]}>
       <Text style={styles.bannerText}>{text}</Text>
-      {onDismiss && (
-        <Button title="Dismiss" variant="secondary" onPress={onDismiss} />
-      )}
+      {onDismiss && <Button title="Dismiss" variant="secondary" compact onPress={onDismiss} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0b1120' },
   overlayWrap: {
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 24,
+    bottom: 28,
     gap: 8,
   },
-  banner: { borderRadius: 12, padding: 14 },
-  bannerWarn: { backgroundColor: '#78350fdd' },
-  bannerBad: { backgroundColor: '#7f1d1ddd' },
-  bannerText: { color: '#fee2e2', textAlign: 'center', fontWeight: '600' },
+  banner: { borderRadius: 16, padding: 16, borderWidth: 1 },
+  bannerWarn: { backgroundColor: '#2a1c08ee', borderColor: color.gold },
+  bannerBad: { backgroundColor: '#2a0c12ee', borderColor: color.blaze },
+  bannerText: { color: color.cream, textAlign: 'center', fontWeight: '600', lineHeight: 20 },
 });
 
 // Re-export for convenience of entry file.
